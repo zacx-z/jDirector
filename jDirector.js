@@ -2,20 +2,28 @@ function Director() {
     var director = this;
     function Future(obj) {
         var actions = [];
-        this.blackBG = function (context) {
-            actions.push(function () {
-                this.blackBG(context);
-            });
-            return this;
-        }
-        this.delay = function (ms) {
-            var future = new Future();
-            actions.push(function () {
-                future.follow(this.delay(ms));
-            });
-            return future;
-        }
 
+        function instantPort(func) {
+            return function () {
+                var args = arguments;
+                actions.push(function () {
+                    func.apply(obj, args);
+                });
+                return this;
+            }
+        }
+        function continuousPort(func) {
+            return function () {
+                var future = new Future(obj);
+                var args = arguments;
+                actions.push(function () {
+                    future.follow(func.apply(this, args));
+                });
+                return future;
+            }
+        }
+        this.blackBG = instantPort(obj.blackBG);
+        this.delay = continuousPort(obj.delay);
         // future manipulations
         this.schedule = function(obj) {
             actions.forEach(function(a) {
@@ -37,7 +45,7 @@ function Director() {
     }
 
     this.draw = function () {};
-    /*this.setAnimation = function (callback) {
+    this.setAnimation = function (callback) {
         var that = this;
         var future = new Future(this);
         var cid = setInterval(function() {
@@ -47,7 +55,7 @@ function Director() {
             }
         }, 20);
         return future;
-    }*/
+    }
 
 
     // animation functions
@@ -75,4 +83,4 @@ function Director() {
 }
 
 director = new Director();
-director.delay(1000).blackBG().delay(2000).blackBG().delay(5000).blackBG();
+director.delay(1000).blackBG().delay(2000).blackBG().delay(5000).blackBG().delay(1000).blackBG();
