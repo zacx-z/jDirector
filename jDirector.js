@@ -22,8 +22,19 @@ function Director() {
                 return future;
             }
         }
-        this.blackBG = instantPort(obj.blackBG);
-        this.delay = continuousPort(obj.delay);
+
+        var thisFuture = this;
+        function portAll(insFuncNames, conFuncNames) {
+            insFuncNames.forEach(function (name) {
+                thisFuture[name] = instantPort(obj[name]);
+            });
+            conFuncNames.forEach(function (name) {
+                thisFuture[name] = continuousPort(obj[name]);
+            });
+        }
+
+        portAll(["log"], ["delay"]);
+
         // future manipulations
         this.schedule = function(obj) {
             actions.forEach(function(a) {
@@ -59,12 +70,8 @@ function Director() {
 
 
     // animation functions
-    this.blackBG = function () {
-        console.log('black');
-        /*this.draw = function (context) {
-            context.fillStyle = "black";
-            context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-        }*/
+    this.log = function () {
+        console.log.apply(console, arguments);
         return this;
     }
     this.delay = function (ms) {
@@ -83,4 +90,4 @@ function Director() {
 }
 
 director = new Director();
-director.delay(1000).blackBG().delay(2000).blackBG().delay(5000).blackBG().delay(1000).blackBG();
+director.delay(1000).log("OK").delay(2000).log("Ah").delay(5000).log("fuck").delay(1000).log("en");
