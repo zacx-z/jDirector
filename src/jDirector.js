@@ -75,7 +75,6 @@ jD = (function () {
         });
 
         this.addFunc("delay", function (ms) {
-            var that = this;
             var future = new Future(this);
             setTimeout(function() {
                 future.schedule();

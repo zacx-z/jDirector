@@ -52,7 +52,7 @@ d.delay(1000).delay(1000).log('Hello').delay(3000).log('Bye');
 
 #### Parallel Scheduling
 
-The following code schedule two invocations parallelly.
+The following code schedule two chains parallelly.
 
 ```javascript
 d.delay(1000).log('Hi').delay(2000).log('Bye');
@@ -81,15 +81,21 @@ d.delay(1000)
 }, ["Bye"]);
 ```
 
-`animate(callback, [length], [interval])` will call the callback every `interval` milliseconds for `length` milliseconds. If length is not specified or is null, the callback will be called until it returns false or null (strict!). The default valud of `interval` is 20.
+`animate(callback, [length], [interval])` will call the callback every `interval` milliseconds for `length` milliseconds.
+
+If length is not specified or is null, the animation will not stop until the callback returns false or null (strict!).
+
+The default value of `interval` is 20.
+
 The callback will be called with a parameter, which represents the time period from the start in milliseconds.
+
 Subsequent invocations will be scheduled after the animation.
 
 ```javascript
 d.animate(function(t) {
     var c = t / 10;
     document.body.style.background = 'rgb(' + c + ',' + c + ',' + c + ')';
-    return c < 255; // while t <= 255
+    return c <= 255; // while c <= 255
 }, null, 20)
 .log("Animation end.");
 ```
@@ -140,9 +146,31 @@ MyDirector.prototype = proto;
 new MyDirector().delay(1000).logOK();
 ```
 
+#### The Future Object
+
+`jD.Future` is the return value of many functions of `jD.Director`, such as `delay` and `animate`. It has functions of the same names that are added through `jD.Director.addFunc`. However, the execution of them will be delayed. So it is the "future".
+
+`new jD.Future(director)`: Contructor. Should be provided a valid `jD.Director` object.
+
+`jD.Future.schedule()`: Make all delayed calls to be scheduled immediately.
+
+`jD.Future.follow(future)`: Make it be scheduled after `future` is scheduled.
+
+`jD.Future.onSchedule(callback)`: The callback will be called when the future is scheduled. The calling code: `callback.call(future, director)`.
+
+Use `jD.Future` in `addFunc`:
+
+```javascript
+d.addFunc("delay1s", function () {
+    var future = new jD.Future(this);
+    setTimeout(function () {
+        future.schedule();
+    }, 1000);
+    return future;
+});
+```
+
 ### TODO
- * Docs: 
-     - Advance: The Future Object
  * Parallel Timing
  * Cancellation
  * Flow Figure Generation
