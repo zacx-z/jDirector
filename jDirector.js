@@ -71,6 +71,10 @@ function Director() {
         return true;
     }
 
+    this.addInstantFunc("instant", function (callback, args) {
+        callback.apply(this, args);
+    });
+
     this.addInstantFunc("log", function () {
         console.log.apply(console, arguments);
         return this;
@@ -85,18 +89,20 @@ function Director() {
         return future;
     });
 
-    this.addContinuousFunc("animate", function (callback) {
+    this.addContinuousFunc("animate", function (callback, interval) {
         var that = this;
         var future = new Future(this);
+        interval = interval || 20;
         var cid = setInterval(function() {
             if (callback.call(that)) {
                 clearInterval(cid);
                 future.schedule(this);
             }
-        }, 20); // TODO Make it configurable
+        }, interval);
         return future;
     });
 }
 
+// Test Code
 director = new Director();
-director.delay(1000).log("OK").delay(1000).log("Ah").delay(2000).log("Oops").delay(1000).log("Hah");
+director.delay(1000).instant(function () { console.log("OK"); }).delay(1000).log("Ah").delay(2000).log("Oops").delay(1000).log("Hah");
