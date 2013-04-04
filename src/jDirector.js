@@ -2,13 +2,16 @@ jD = (function () {
     var api = {};
     var Future = api.Future =  function (obj) {
         var actions = [];
+        var done = false;
 
         function instantPort(func) {
             return function () {
                 var args = arguments;
-                actions.push(function () {
+                var f = function () {
                     func.apply(obj, args);
-                });
+                }
+                if (done) f();
+                else actions.push(f);
                 return this;
             }
         }
@@ -16,9 +19,11 @@ jD = (function () {
             return function () {
                 var future = new Future(obj);
                 var args = arguments;
-                actions.push(function () {
+                var f = function () {
                     future.follow(func.apply(obj, args));
-                });
+                }
+                if (done) f();
+                else actions.push(f);
                 return future;
             }
         }
@@ -36,21 +41,24 @@ jD = (function () {
         portAll(obj.instantFuncs, obj.continuousFuncs);
 
         // future manipulations
-        this.schedule = function(obj) {
+        this.schedule = function() {
             actions.forEach(function(a) {
                 a.call(obj);
             });
+            done = true;
         }
         this.onSchedule = function (callback) {
             var that = this;
-            actions.push(function () {
+            var f = function () {
                 callback.call(that, this);
-            });
+            }
+            if (done) f();
+            else actions.push(f);
         }
         this.follow = function (prev) {
             var that = this;
-            prev.onSchedule(function (obj) {
-                that.schedule(obj);
+            prev.onSchedule(function () {
+                that.schedule();
             });
         }
     }
@@ -86,7 +94,7 @@ jD = (function () {
             var that = this;
             var future = new Future(this);
             setTimeout(function() {
-                future.schedule(that);
+                future.schedule();
             }, ms);
             return future;
         });
@@ -98,7 +106,7 @@ jD = (function () {
             var cid = setInterval(function() {
                 if (callback.call(that)) {
                     clearInterval(cid);
-                    future.schedule(this);
+                    future.schedule();
                 }
             }, interval);
             return future;
