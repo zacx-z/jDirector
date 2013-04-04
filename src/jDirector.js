@@ -83,6 +83,7 @@ jD = (function () {
 
         this.addInstantFunc("instant", function (callback, args) {
             callback.apply(this, args);
+            return this;
         });
 
         this.addInstantFunc("log", function () {
