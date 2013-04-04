@@ -81,18 +81,16 @@ d.delay(1000)
 }, ["Bye"]);
 ```
 
-`animate(callback, [interval])` will call the callback every `interval` milliseconds until it returns true indicating the end. The default valud of `interval` is 20.
+`animate(callback, [length], [interval])` will call the callback every `interval` milliseconds for `length` milliseconds. If length is not specified or is null, the callback will be called until it returns false or null (strict!). The default valud of `interval` is 20.
+The callback will be called with a parameter, which represents the time period from the start in milliseconds.
 Subsequent invocations will be scheduled after the animation.
 
 ```javascript
-d.animate((function () {
-    var t = 0;
-    return function() {
-        document.body.style.background = 'rgb(' + t + ',' + t + ',' + t + ')';
-        t += 2;
-        return t > 255; // until t > 255
-    };
-})(), 20)
+d.animate(function(t) {
+    var c = t / 10;
+    document.body.style.background = 'rgb(' + c + ',' + c + ',' + c + ')';
+    return c < 255; // while t <= 255
+}, null, 20)
 .log("Animation end.");
 ```
 
@@ -113,7 +111,7 @@ d.addFunc("fadeToBlack", function (speed) {
     return this.animate(function () {
         document.body.style.background = 'rgb(' + t + ',' + t + ',' + t + ')';
         t -= speed;
-        return t < 0;
+        return t >= 0;
     });
 });
 d.delay(1000).logOK().fadeToBlack(5).log("over");

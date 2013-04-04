@@ -83,16 +83,27 @@ jD = (function () {
             return future;
         });
 
-        this.addFunc("animate", function (callback, interval) {
+        this.addFunc("animate", function (callback, length, interval) {
             var that = this;
             var future = new Future(this);
             interval = interval || 20;
-            var cid = setInterval(function() {
-                if (callback.call(that)) {
+
+            var t = 0;
+
+            var cid = setInterval(function () {
+                var ret = callback.call(that, t);
+                if (ret === null || ret === false) {
                     clearInterval(cid);
                     future.schedule();
                 }
+                t += interval;
             }, interval);
+
+            if (length)
+                setTimeout(function () {
+                    clearInterval(cid);
+                    future.schedule();
+                }, length);
             return future;
         });
     }
