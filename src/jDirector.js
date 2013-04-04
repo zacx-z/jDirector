@@ -17,7 +17,7 @@ jD = (function () {
                 var future = new Future(obj);
                 var args = arguments;
                 actions.push(function () {
-                    future.follow(func.apply(this, args));
+                    future.follow(func.apply(obj, args));
                 });
                 return future;
             }
