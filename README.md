@@ -98,24 +98,17 @@ d.animate((function () {
 
 #### Extending jDirector & Writing Plugins
 
-jDirector provides two functions to add functions to it.
-
- * `addInstantFunc(name, func)` Add an instant function, whose behavior should finish immediately after invocation, such as hiding, changing texts. Invocations next to it will be called immediatly.
- * `addContinuousFunc(name, func)` Add a continuous function, whose behavior will last a period of time, such as fading, moving around. Invocations next to it will be called after it has finished.
-
-Both functions will return true when succeeding, or return false due to a name conflict.
-
-There are some conventions for `func`:
-`addInstantFunc`: Should always return `this`.
-`addContinuousFunc`: Should always return a `jD.Future` Object.
+jDirector provides `addFunc(name, func)` to add function to it.
 
 Example:
 ```javascript
 var d = new jD.Director();
-d.addInstantFunc("logOK", function () {
+d.addFunc("logOK", function () {
     console.log("OK");
+    return this;
 });
-d.addContinuousFunc("fadeToBlack", function (speed) {
+
+d.addFunc("fadeToBlack", function (speed) {
     var t = 255;
     return this.animate(function () {
         document.body.style.background = 'rgb(' + t + ',' + t + ',' + t + ')';
@@ -123,21 +116,27 @@ d.addContinuousFunc("fadeToBlack", function (speed) {
         return t < 0;
     });
 });
-
-// Test
-d.delay(1000).fadeToBlack(5).logOK();
+d.delay(1000).logOK().fadeToBlack(5).log("over");
 ```
-*Future versions may merge them into one.*
 
-So we can write plugins through jDirector.
+`addFunc` will return true when succeeding, or return false due to a name conflict.
+
+The body of the function should return `this` or a `jD.Future` object.
+
+ * RETURN `this`: Indicating an instant function, whose behavior should finish immediately after invocation, such as hiding, changing texts. Invocations next to it will be called immediatly.
+ * RETURN `jD.Future`: Indicating a continuous function, whose behavior will last a period of time, such as fading, moving around. Invocations next to it will be called after it has finished.
+
+
+With `addFunc`, we can write plugins for jDirector.
 
 Example:
 
 ```javascript
 function MyDirector() {}
 var proto = new jD.Director();
-proto.addInstantFunc("logOK", function () {
+proto.addFunc("logOK", function () {
     console.log("OK");
+    return this;
 });
 MyDirector.prototype = proto;
 new MyDirector().delay(1000).logOK();

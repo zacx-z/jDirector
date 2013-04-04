@@ -4,18 +4,7 @@ jD = (function () {
         var actions = [];
         var done = false;
 
-        function instantPort(func) {
-            return function () {
-                var args = arguments;
-                var f = function () {
-                    func.apply(obj, args);
-                }
-                if (done) f();
-                else actions.push(f);
-                return this;
-            }
-        }
-        function continuousPort(func) {
+        function portFunc(func) {
             return function () {
                 var future = new Future(obj);
                 var args = arguments;
@@ -29,16 +18,13 @@ jD = (function () {
         }
 
         var thisFuture = this;
-        function portAll(insFuncNames, conFuncNames) {
-            insFuncNames.forEach(function (name) {
-                thisFuture[name] = instantPort(obj[name]);
-            });
-            conFuncNames.forEach(function (name) {
-                thisFuture[name] = continuousPort(obj[name]);
+        function portAll(funcNames) {
+            funcNames.forEach(function (name) {
+                thisFuture[name] = portFunc(obj[name]);
             });
         }
 
-        portAll(obj.instantFuncs, obj.continuousFuncs);
+        portAll(obj.funcs);
 
         // future manipulations
         this.schedule = function() {
@@ -64,34 +50,31 @@ jD = (function () {
     }
 
     api.Director = function () {
-        this.instantFuncs = [];
-        this.continuousFuncs = [];
+        this.funcs = [];
+
+        this.onSchedule = function (callback) {
+            callback.call(this, this);
+        }
 
         // Animation Manipulation
-        this.addInstantFunc = function (name, callback) {
+        this.addFunc = function (name, callback) {
             if (this[name]) return false;
             this[name] = callback;
-            this.instantFuncs.push(name);
-            return true;
-        }
-        this.addContinuousFunc = function (name, callback) {
-            if (this[name]) return false;
-            this[name] = callback;
-            this.continuousFuncs.push(name);
+            this.funcs.push(name);
             return true;
         }
 
-        this.addInstantFunc("instant", function (callback, args) {
+        this.addFunc("instant", function (callback, args) {
             callback.apply(this, args);
             return this;
         });
 
-        this.addInstantFunc("log", function () {
+        this.addFunc("log", function () {
             console.log.apply(console, arguments);
             return this;
         });
 
-        this.addContinuousFunc("delay", function (ms) {
+        this.addFunc("delay", function (ms) {
             var that = this;
             var future = new Future(this);
             setTimeout(function() {
@@ -100,7 +83,7 @@ jD = (function () {
             return future;
         });
 
-        this.addContinuousFunc("animate", function (callback, interval) {
+        this.addFunc("animate", function (callback, interval) {
             var that = this;
             var future = new Future(this);
             interval = interval || 20;
