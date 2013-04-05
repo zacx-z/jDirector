@@ -2,7 +2,7 @@
 
 jDirector is a simple and lightweight framework for animation and timing written in JavaScript, providing a jQuery-like interface.
 
-An experimental library on functional programming.
+An experimental library on functional programming and simulating coroutine.
 
 ### How To Use
 
