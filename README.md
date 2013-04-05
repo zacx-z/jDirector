@@ -31,7 +31,7 @@ d.wait(1000).instant(function () { console.log("Hello World!"); });
 
 #### Serial Scheduling
 
-Director functions can be called in chains.
+Director commands can be called in chains.
 Later invocations will be scheduled after earlier ones.
 
 NOTE: `d` is an instance of a `jD.Director` in following code.
@@ -42,7 +42,7 @@ d.wait(1000).log("something");
 
 `log` will be delayed 1s.
 
-We can call functions multiple times.
+We can call any command multiple times.
 
 ```javascript
 d.wait(1000).wait(1000).log('Hello').wait(3000).log('Bye');
@@ -102,17 +102,17 @@ d.constant(function(t) {
 
 #### Extending jDirector & Writing Plugins
 
-jDirector provides `addFunc(name, func)` to add function to it.
+jDirector provides `addCommand(name, func)` to add commands to it.
 
 Example:
 ```javascript
 var d = new jD.Director();
-d.addFunc("logOK", function () {
+d.addCommand("logOK", function () {
     console.log("OK");
     return this;
 });
 
-d.addFunc("fadeToBlack", function (speed) {
+d.addCommand("fadeToBlack", function (speed) {
     var t = 255;
     return this.constant(function () {
         document.body.style.background = 'rgb(' + t + ',' + t + ',' + t + ')';
@@ -123,22 +123,22 @@ d.addFunc("fadeToBlack", function (speed) {
 d.wait(1000).logOK().fadeToBlack(5).log("over");
 ```
 
-`addFunc` will return the director object when succeeding, or throw an error due to a name conflict.
+`addCommand` will return the director object when succeeding, or throw an error due to a name conflict.
 
-The body of the function should return `this` or a `jD.Future` object.
+The body of the command should return `this` or a `jD.Future` object.
 
- * RETURN `this`: Indicating an instant function, whose behavior should finish immediately after invocation, such as hiding, changing texts. Invocations next to it will be called immediatly.
- * RETURN `jD.Future`: Indicating a continuous function, whose behavior will last a period of time, such as fading, moving around. Invocations next to it will be called after it has finished.
+ * RETURN `this`: Indicating an instant command, whose behavior should finish immediately after invocation, such as hiding, changing texts. Invocations next to it will be called immediatly.
+ * RETURN `jD.Future`: Indicating a constant command, whose behavior will last a period of time, such as fading, moving around. Invocations next to it will be called after it has finished.
 
 
-With `addFunc`, we can write plugins for jDirector.
+With `addCommand`, we can write plugins for jDirector.
 
 Example:
 
 ```javascript
 function MyDirector() {}
 var proto = new jD.Director();
-proto.addFunc("logOK", function () {
+proto.addCommand("logOK", function () {
     console.log("OK");
     return this;
 });
@@ -148,7 +148,7 @@ new MyDirector().wait(1000).logOK();
 
 #### The Future Object
 
-`jD.Future` is the return value of many functions of `jD.Director`, such as `wait` and `constant`. It has functions of the same names that are added through `jD.Director.addFunc`. However, the execution of them will be delayed. So it is the "future".
+`jD.Future` is the return value of many commands of `jD.Director`, such as `wait` and `constant`. It has commands of the same names. However, the execution of them will be delayed. So it is the "future".
 
 `new jD.Future(director)`: Contructor. Should be provided a valid `jD.Director` object.
 
@@ -158,10 +158,10 @@ new MyDirector().wait(1000).logOK();
 
 `jD.Future.onSchedule(callback)`: The callback will be called when the future is scheduled. The calling code: `callback.call(future, director)`.
 
-Use `jD.Future` in `addFunc`:
+Use `jD.Future` in `addCommand`:
 
 ```javascript
-d.addFunc("delay1s", function () {
+d.addCommand("delay1s", function () {
     var future = new jD.Future(this);
     setTimeout(function () {
         future.schedule();

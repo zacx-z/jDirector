@@ -28,6 +28,7 @@ jD = (function () {
 
         // future manipulations
         this.schedule = function() {
+            if (done) return; // schedule can only be executed once
             actions.forEach(function(a) {
                 a.call(obj);
             });
@@ -57,24 +58,24 @@ jD = (function () {
         }
 
         // Animation Manipulation
-        this.addFunc = function (name, callback) {
+        this.addCommand = function (name, callback) {
             if (this[name]) throw "Name Conflict";
             this[name] = callback;
             this.funcs.push(name);
             return this;
         }
 
-        this.addFunc("instant", function (callback, args) {
+        this.addCommand("instant", function (callback, args) {
             callback.apply(this, args);
             return this;
         });
 
-        this.addFunc("log", function () {
+        this.addCommand("log", function () {
             console.log.apply(console, arguments);
             return this;
         });
 
-        this.addFunc("wait", function (ms) {
+        this.addCommand("wait", function (ms) {
             var future = new Future(this);
             setTimeout(function() {
                 future.schedule();
@@ -82,7 +83,7 @@ jD = (function () {
             return future;
         });
 
-        this.addFunc("constant", function (callback, length, interval) {
+        this.addCommand("constant", function (callback, length, interval) {
             var that = this;
             var future = new Future(this);
             interval = interval || 20;
