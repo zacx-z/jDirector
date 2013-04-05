@@ -107,8 +107,8 @@ jDirector provides `addCommand(name, func)` to add commands to it.
 Example:
 ```javascript
 var d = new jD.Director();
-d.addCommand("logOK", function () {
-    console.log("OK");
+d.addCommand("logStart", function () {
+    console.log("start");
     return this;
 });
 
@@ -120,15 +120,15 @@ d.addCommand("fadeToBlack", function (speed) {
         return t >= 0;
     });
 });
-d.wait(1000).logOK().fadeToBlack(5).log("over");
+d.wait(1000).logStart().fadeToBlack(5).log("over");
 ```
 
 `addCommand` will return the director object when succeeding, or throw an error due to a name conflict.
 
 The body of the command should return `this` or a `jD.Future` object.
 
- * RETURN `this`: Indicating an instant command, whose behavior should finish immediately after invocation, such as hiding, changing texts. Invocations next to it will be called immediatly.
- * RETURN `jD.Future`: Indicating a constant command, whose behavior will last a period of time, such as fading, moving around. Invocations next to it will be called after it has finished.
+ * Return `this`: Indicating an instant command, whose behavior should finish immediately after invocation, such as hiding, changing texts. Invocations next to it will be called immediatly.
+ * Return `jD.Future`: Indicating a constant command, whose behavior will last a period of time, such as fading, moving around. Invocations next to it will be called after it has finished.
 
 
 With `addCommand`, we can write plugins for jDirector.
@@ -139,8 +139,7 @@ Example:
 function MyDirector() {}
 var proto = new jD.Director();
 proto.addCommand("logOK", function () {
-    console.log("OK");
-    return this;
+    return this.log("OK");
 });
 MyDirector.prototype = proto;
 new MyDirector().wait(1000).logOK();
