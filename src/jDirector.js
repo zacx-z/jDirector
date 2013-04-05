@@ -58,10 +58,10 @@ jD = (function () {
 
         // Animation Manipulation
         this.addFunc = function (name, callback) {
-            if (this[name]) return false;
+            if (this[name]) throw "Name Conflict";
             this[name] = callback;
             this.funcs.push(name);
-            return true;
+            return this;
         }
 
         this.addFunc("instant", function (callback, args) {

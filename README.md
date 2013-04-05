@@ -123,7 +123,7 @@ d.addFunc("fadeToBlack", function (speed) {
 d.delay(1000).logOK().fadeToBlack(5).log("over");
 ```
 
-`addFunc` will return true when succeeding, or return false due to a name conflict.
+`addFunc` will return the director object when succeeding, or throw an error due to a name conflict.
 
 The body of the function should return `this` or a `jD.Future` object.
 
