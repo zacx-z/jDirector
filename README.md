@@ -1,6 +1,6 @@
 ## jDirector
 
-jDirector is a simple and lightweight framework for animation and timing written in JavaScript, providing a jQuery-like interface.
+jDirector is a simple and extensible framework for animation and timing written in JavaScript, providing a jQuery-like interface.
 
 An experimental library on functional programming and simulating coroutine.
 
@@ -16,7 +16,7 @@ Hello World:
 
 ```javascript
 var d = new jD.Director();
-d.delay(1000).log("Hello World!");
+d.wait(1000).log("Hello World!");
 ```
 
 Then "Hello World" will appear after 1s.
@@ -24,7 +24,7 @@ Then "Hello World" will appear after 1s.
 Yet another Hello World, which behaves the same:
 ```javascript
 var d = new jD.Director();
-d.delay(1000).instant(function () { console.log("Hello World!"); });
+d.wait(1000).instant(function () { console.log("Hello World!"); });
 ```
 
 *Only chrome is tested now.*
@@ -37,7 +37,7 @@ Later invocations will be scheduled after earlier ones.
 NOTE: `d` is an instance of a `jD.Director` in following code.
 
 ```javascript
-d.delay(1000).log("something");
+d.wait(1000).log("something");
 ```
 
 `log` will be delayed 1s.
@@ -45,7 +45,7 @@ d.delay(1000).log("something");
 We can call functions multiple times.
 
 ```javascript
-d.delay(1000).delay(1000).log('Hello').delay(3000).log('Bye');
+d.wait(1000).wait(1000).log('Hello').wait(3000).log('Bye');
 ```
 
 "Hello" will appear after 2s and "Bye" will appear 3s after "Hello" appears.
@@ -55,33 +55,33 @@ d.delay(1000).delay(1000).log('Hello').delay(3000).log('Bye');
 The following code schedule two chains parallelly.
 
 ```javascript
-d.delay(1000).log('Hi').delay(2000).log('Bye');
-d.delay(2000).log('Hello, ').delay(1000).log('World.');
+d.wait(1000).log('Hi').wait(2000).log('Bye');
+d.wait(2000).log('Hello, ').wait(1000).log('World.');
 ```
 
 If you want to schedule them serially, you should:
 
 ```javascript
-var r = d.delay(1000).log('Hi').delay(2000).log('Bye');
-r.delay(2000).log('Hello, ').delay(1000).log('World.');
+var r = d.wait(1000).log('Hi').wait(2000).log('Bye');
+r.wait(2000).log('Hello, ').wait(1000).log('World.');
 ```
 
-#### Instant & Animate
+#### Instant & Constant
 
 `instant(callback)` will call the callback in the timing flow.
 
 ```javascript
-d.delay(1000)
+d.wait(1000)
 .instant(function () {
     console.log("Hello");
 })
-.delay(1000)
+.wait(1000)
 .instant(function (str) {
     console.log(str);
 }, ["Bye"]);
 ```
 
-`animate(callback, [length], [interval])` will call the callback every `interval` milliseconds for `length` milliseconds.
+`constant(callback, [length], [interval])` will call the callback every `interval` milliseconds for `length` milliseconds.
 
 If length is not specified or is null, the animation will not stop until the callback returns false or null (strict!).
 
@@ -92,7 +92,7 @@ The callback will be called with a parameter, which represents the time period f
 Subsequent invocations will be scheduled after the animation.
 
 ```javascript
-d.animate(function(t) {
+d.constant(function(t) {
     var c = t / 10;
     document.body.style.background = 'rgb(' + c + ',' + c + ',' + c + ')';
     return c <= 255; // while c <= 255
@@ -114,13 +114,13 @@ d.addFunc("logOK", function () {
 
 d.addFunc("fadeToBlack", function (speed) {
     var t = 255;
-    return this.animate(function () {
+    return this.constant(function () {
         document.body.style.background = 'rgb(' + t + ',' + t + ',' + t + ')';
         t -= speed;
         return t >= 0;
     });
 });
-d.delay(1000).logOK().fadeToBlack(5).log("over");
+d.wait(1000).logOK().fadeToBlack(5).log("over");
 ```
 
 `addFunc` will return the director object when succeeding, or throw an error due to a name conflict.
@@ -143,12 +143,12 @@ proto.addFunc("logOK", function () {
     return this;
 });
 MyDirector.prototype = proto;
-new MyDirector().delay(1000).logOK();
+new MyDirector().wait(1000).logOK();
 ```
 
 #### The Future Object
 
-`jD.Future` is the return value of many functions of `jD.Director`, such as `delay` and `animate`. It has functions of the same names that are added through `jD.Director.addFunc`. However, the execution of them will be delayed. So it is the "future".
+`jD.Future` is the return value of many functions of `jD.Director`, such as `wait` and `constant`. It has functions of the same names that are added through `jD.Director.addFunc`. However, the execution of them will be delayed. So it is the "future".
 
 `new jD.Future(director)`: Contructor. Should be provided a valid `jD.Director` object.
 

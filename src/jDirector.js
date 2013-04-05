@@ -74,7 +74,7 @@ jD = (function () {
             return this;
         });
 
-        this.addFunc("delay", function (ms) {
+        this.addFunc("wait", function (ms) {
             var future = new Future(this);
             setTimeout(function() {
                 future.schedule();
@@ -82,7 +82,7 @@ jD = (function () {
             return future;
         });
 
-        this.addFunc("animate", function (callback, length, interval) {
+        this.addFunc("constant", function (callback, length, interval) {
             var that = this;
             var future = new Future(this);
             interval = interval || 20;
