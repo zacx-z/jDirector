@@ -32,7 +32,7 @@ d.wait(1000).instant(function () { console.log("Hello World!"); });
 #### Serial Scheduling
 
 Director commands can be called in chains.
-Later invocations will be scheduled after earlier ones.
+Later commands will be executed after earlier ones.
 
 NOTE: `d` is an instance of a `jD.Director` in following code.
 
@@ -52,14 +52,14 @@ d.wait(1000).wait(1000).log('Hello').wait(3000).log('Bye');
 
 #### Parallel Scheduling
 
-The following code schedule two chains parallelly.
+The following code execute two chains parallelly.
 
 ```javascript
 d.wait(1000).log('Hi').wait(2000).log('Bye');
 d.wait(2000).log('Hello, ').wait(1000).log('World.');
 ```
 
-If you want to schedule them serially, you should:
+If you want to execute them serially, you should:
 
 ```javascript
 var r = d.wait(1000).log('Hi').wait(2000).log('Bye');
@@ -122,7 +122,7 @@ The default value of `interval` is 20.
 
 The callback will be called with a parameter, which represents the time period from the start in milliseconds.
 
-Subsequent invocations will be scheduled after the animation.
+Subsequent commands will be execute after the animation.
 
 ```javascript
 d.constant(function(t) {
@@ -184,11 +184,11 @@ new MyDirector().wait(1000).logOK();
 
 `director.future()`: Create a future for `director`.
 
-`schedule()`: Make all delayed calls to be scheduled immediately.
+`resume()`: Make all delayed commands of the `Future` object to be executed immediately.
 
-`follow(future)`: Make it be scheduled after `future` is scheduled.
+`follow(future)`: Make it resume after `future` resumes.
 
-`onSchedule(callback)`: The callback will be called when the future is scheduled. The calling code: `callback.call(future, director)`.
+`onResume(callback)`: The callback will be called when the future resumes. The calling code: `callback.call(future, director)`.
 
 Use `Future` in `addCommand`:
 
@@ -196,7 +196,7 @@ Use `Future` in `addCommand`:
 d.addCommand("delay1s", function () {
     var future = this.future();
     setTimeout(function () {
-        future.schedule();
+        future.resume();
     }, 1000);
     return future;
 });

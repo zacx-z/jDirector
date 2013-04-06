@@ -27,14 +27,14 @@ jD = (function () {
         portAll(obj.funcs);
 
         // future manipulations
-        this.schedule = function() {
-            if (done) return; // schedule can only be executed once
+        this.resume = function() {
+            if (done) return; // resume can only be executed once
             actions.forEach(function(a) {
                 a.call(obj);
             });
             done = true;
         }
-        this.onSchedule = function (callback) {
+        this.onResume = function (callback) {
             var that = this;
             var f = function () {
                 callback.call(that, this);
@@ -44,8 +44,8 @@ jD = (function () {
         }
         this.follow = function (prev) {
             var that = this;
-            prev.onSchedule(function () {
-                that.schedule();
+            prev.onResume(function () {
+                that.resume();
             });
         }
     }
@@ -57,7 +57,7 @@ jD = (function () {
             return new Future(this);
         }
 
-        this.onSchedule = function (callback) {
+        this.onResume = function (callback) {
             callback.call(this, this);
         }
 
@@ -82,7 +82,7 @@ jD = (function () {
         this.addCommand("wait", function (ms) {
             var future = this.future();
             setTimeout(function() {
-                future.schedule();
+                future.resume();
             }, ms);
             return future;
         });
@@ -99,8 +99,8 @@ jD = (function () {
                 
             var future = this.future();
             for (var i = 0; i < l; ++i) {
-                arguments[i].onSchedule(function () {
-                    if (sel == 0) future.schedule();
+                arguments[i].onResume(function () {
+                    if (sel == 0) future.resume();
                     sel --;
                 });
             }
@@ -118,7 +118,7 @@ jD = (function () {
                 var ret = callback.call(that, t);
                 if (ret === null || ret === false) {
                     clearInterval(cid);
-                    future.schedule();
+                    future.resume();
                 }
                 t += interval;
             }, interval);
@@ -126,7 +126,7 @@ jD = (function () {
             if (length)
                 setTimeout(function () {
                     clearInterval(cid);
-                    future.schedule();
+                    future.resume();
                 }, length);
             return future;
         });
