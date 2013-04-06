@@ -87,6 +87,26 @@ jD = (function () {
             return future;
         });
 
+        this.addCommand("after", function () {
+            var sel = -1;
+            var l = arguments.length;
+            if (typeof arguments[l - 1] == 'number') {
+                sel = arguments[l - 1];
+                l --;
+            }
+
+            if (sel < 0) sel += l;
+                
+            var future = this.future();
+            for (var i = 0; i < l; ++i) {
+                arguments[i].onSchedule(function () {
+                    if (sel == 0) future.schedule();
+                    sel --;
+                });
+            }
+            return future;
+        });
+
         this.addCommand("constant", function (callback, length, interval) {
             var that = this;
             var future = this.future();

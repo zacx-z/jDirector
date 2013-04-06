@@ -66,6 +66,39 @@ var r = d.wait(1000).log('Hi').wait(2000).log('Bye');
 r.wait(2000).log('Hello, ').wait(1000).log('World.');
 ```
 
+If you want to run a command after all parallel commands are over, you should use `after`:
+
+```javascript
+var r = d.wait(1000);
+r.after(
+    r.log('branch 1 start').wait(1000).log('branch 1 end'),
+    r.log('branch 2 start').wait(2000).log('branch 2 end')
+).log('all branches over');
+```
+
+Command `after(b1, b2, b..., [sel])` can join branches together. The optional parameter `sel` is an integer, specifying when later commands will be executed. If it is not specified, later commands will start after all branches over.
+
+If `sel` is a nonnegative integer, later commands are executed after the `sel`+1 shorter branch is over.
+
+If `sel` is a negative integer, later commands are executed after the -`sel` longer branch is over.
+
+You can add a "call" command to chain them together:
+
+```javascript
+var d = new jD.Director();
+d.addCommand("call", function (callback) {
+    return callback.call(this);
+});
+
+d.wait(1000).call(function () {
+    return this.after(
+        this.log('branch 1 start').wait(1000).log('branch 1 end'),
+        this.log('branch 2 start').wait(2000).log('branch 2 end')
+    );
+}).log('all branches over');
+```
+
+
 #### Instant & Constant
 
 `instant(callback)` will call the callback in the timing flow.
