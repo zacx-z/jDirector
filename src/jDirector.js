@@ -1,12 +1,12 @@
 jD = (function () {
     var api = {};
-    var Future = api.Future =  function (obj) {
+    var Future = function (obj) {
         var actions = [];
         var done = false;
 
         function portFunc(func) {
             return function () {
-                var future = new Future(obj);
+                var future = obj.future();
                 var args = arguments;
                 var f = function () {
                     future.follow(func.apply(obj, args));
@@ -53,6 +53,10 @@ jD = (function () {
     api.Director = function () {
         this.funcs = [];
 
+        this.future = function () {
+            return new Future(this);
+        }
+
         this.onSchedule = function (callback) {
             callback.call(this, this);
         }
@@ -76,7 +80,7 @@ jD = (function () {
         });
 
         this.addCommand("wait", function (ms) {
-            var future = new Future(this);
+            var future = this.future();
             setTimeout(function() {
                 future.schedule();
             }, ms);
@@ -85,7 +89,7 @@ jD = (function () {
 
         this.addCommand("constant", function (callback, length, interval) {
             var that = this;
-            var future = new Future(this);
+            var future = this.future();
             interval = interval || 20;
 
             var t = 0;

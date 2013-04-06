@@ -125,10 +125,10 @@ d.wait(1000).logStart().fadeToBlack(5).log("over");
 
 `addCommand` will return the director object when succeeding, or throw an error due to a name conflict.
 
-The body of the command should return `this` or a `jD.Future` object.
+The body of the command should return `this` or a `Future` object.
 
  * Return `this`: Indicating an instant command, whose behavior should finish immediately after invocation, such as hiding, changing texts. Invocations next to it will be called immediatly.
- * Return `jD.Future`: Indicating a constant command, whose behavior will last a period of time, such as fading, moving around. Invocations next to it will be called after it has finished.
+ * Return `Future`: Indicating a constant command, whose behavior will last a period of time, such as fading, moving around. Invocations next to it will be called after it has finished.
 
 
 With `addCommand`, we can write plugins for jDirector.
@@ -147,21 +147,21 @@ new MyDirector().wait(1000).logOK();
 
 #### The Future Object
 
-`jD.Future` is the return value of many commands of `jD.Director`, such as `wait` and `constant`. It has commands of the same names. However, the execution of them will be delayed. So it is the "future".
+`Future` is the return value of many commands of `jD.Director`, such as `wait` and `constant`. It has commands of the same names. However, the execution of them will be delayed. So it is the "future".
 
-`new jD.Future(director)`: Contructor. Should be provided a valid `jD.Director` object.
+`director.future()`: Create a future for `director`.
 
-`jD.Future.schedule()`: Make all delayed calls to be scheduled immediately.
+`schedule()`: Make all delayed calls to be scheduled immediately.
 
-`jD.Future.follow(future)`: Make it be scheduled after `future` is scheduled.
+`follow(future)`: Make it be scheduled after `future` is scheduled.
 
-`jD.Future.onSchedule(callback)`: The callback will be called when the future is scheduled. The calling code: `callback.call(future, director)`.
+`onSchedule(callback)`: The callback will be called when the future is scheduled. The calling code: `callback.call(future, director)`.
 
-Use `jD.Future` in `addCommand`:
+Use `Future` in `addCommand`:
 
 ```javascript
 d.addCommand("delay1s", function () {
-    var future = new jD.Future(this);
+    var future = this.future();
     setTimeout(function () {
         future.schedule();
     }, 1000);
