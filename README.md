@@ -200,6 +200,10 @@ d.addCommand("delay1s", function () {
 ```
 
 ### TODO
- * Parallel Timing
- * Cancellation
- * Flow Figure Generation
+ * Docs
+    - How to make your command cancelable
+ * Advance and dangerous features may be put into jDirectorEx
+    - All commands cancelable
+    - Flow Figure Generation
+ * Plugins:
+    - jTween
