@@ -82,15 +82,12 @@ If `sel` is a nonnegative integer, later commands are executed after the `sel`+1
 
 If `sel` is a negative integer, later commands are executed after the -`sel` longer branch is over.
 
-You can add a "call" command to chain them together:
+You use `invoke` command to chain them together:
 
 ```javascript
 var d = new jD.Director();
-d.addCommand("call", function (callback) {
-    return callback.call(this);
-});
 
-d.wait(1000).call(function () {
+d.wait(1000).invoke(function () {
     return this.after(
         this.log('branch 1 start').wait(1000).log('branch 1 end'),
         this.log('branch 2 start').wait(2000).log('branch 2 end')

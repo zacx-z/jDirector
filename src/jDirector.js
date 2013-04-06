@@ -123,6 +123,11 @@ jD = (function () {
             return future;
         });
 
+        // do customized commands without calling 'addCommand'
+        this.addCommand("invoke", function (callback, args) {
+            return callback.apply(this, args);
+        });
+
         // Do it instantly
         this.addCommand("instant", function (callback, args) {
             callback.apply(this, args);

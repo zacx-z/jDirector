@@ -13,11 +13,8 @@ r.after(r.constant(function(t) {
 
 
 var d = new jD.Director();
-d.addCommand("call", function (callback) {
-    return callback.call(this);
-});
 
-d.wait(1000).call(function () {
+d.wait(1000).invoke(function () {
     return this.after(
         this.log('branch 1 start').wait(1000).log('branch 1 end'),
         this.log('branch 2 start').wait(2000).log('branch 2 end')
