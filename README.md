@@ -76,13 +76,13 @@ r.after(
 ).log('all branches over');
 ```
 
-Command `after(b1, b2, b..., [sel])` can join branches together. The optional parameter `sel` is an integer, specifying when later commands will be executed. If it is not specified, later commands will start after all branches over.
+Command `after(b1, b2, b..., [sel])` can join branches together. The optional parameter `sel` is an integer, specifying when subsequent commands will be executed. If it is not specified, subsequent commands will start after all branches over.
 
-If `sel` is a nonnegative integer, later commands are executed after the `sel`+1 shorter branch is over.
+If `sel` is a nonnegative integer, subsequent commands are executed after the `sel + 1` shorter branch is over.
 
-If `sel` is a negative integer, later commands are executed after the -`sel` longer branch is over.
+If `sel` is a negative integer, subsequent commands are executed after the `-sel` longer branch is over.
 
-You use `invoke` command to chain them together:
+You can use `invoke` command to chain them together:
 
 ```javascript
 var d = new jD.Director();
