@@ -1,8 +1,19 @@
 jD = (function () {
     var api = {};
+
+    // -------
+    // Future
+    // obj is expected to be an instance of Director
+
     var Future = function (obj) {
+        // Actions to be executed when future resumes
         var actions = [];
+        // whether 'resume' function has been called
         var done = false;
+
+        // --------------------
+        // Copy all the commands director
+        // and change their bodies a little
 
         function portFunc(func) {
             return function () {
@@ -24,9 +35,12 @@ jD = (function () {
             });
         }
 
-        portAll(obj.funcs);
+        portAll(obj.commands);
 
+        // -----------------------------
         // future manipulations
+
+        // Do all the actions it has restored
         this.resume = function() {
             if (done) return; // resume can only be executed once
             actions.forEach(function(a) {
@@ -34,6 +48,8 @@ jD = (function () {
             });
             done = true;
         }
+
+        // Add actions manually
         this.onResume = function (callback) {
             var that = this;
             var f = function () {
@@ -42,51 +58,51 @@ jD = (function () {
             if (done) f();
             else actions.push(f);
         }
+
+        // Make this resume after another future resumes
+        // 'prev' may be a future or a director
         this.follow = function (prev) {
-            var that = this;
-            prev.onResume(function () {
-                that.resume();
-            });
+            prev.onResume(this.resume);
         }
     }
 
     api.Director = function () {
-        this.funcs = [];
+        this.commands = [];
 
         this.future = function () {
             return new Future(this);
         }
 
+        // Expected to be called by Future.follow
         this.onResume = function (callback) {
             callback.call(this, this);
         }
 
-        // Animation Manipulation
+        // Add a command to customize it
         this.addCommand = function (name, callback) {
             if (this[name]) throw "Name Conflict";
             this[name] = callback;
-            this.funcs.push(name);
+            this.commands.push(name);
             return this;
         }
 
-        this.addCommand("instant", function (callback, args) {
-            callback.apply(this, args);
-            return this;
-        });
 
+        // The same as console.log,
+        // except that it is scheduled in the director flow
         this.addCommand("log", function () {
             console.log.apply(console, arguments);
             return this;
         });
 
+        // wait 'ms' milliseconds and execute subsequent commands
         this.addCommand("wait", function (ms) {
             var future = this.future();
-            setTimeout(function() {
-                future.resume();
-            }, ms);
+            setTimeout(future.resume, ms);
             return future;
         });
 
+        // wait for several futures resume
+        // after(future1, future2, ..., [sel])
         this.addCommand("after", function () {
             var sel = -1;
             var l = arguments.length;
@@ -107,6 +123,16 @@ jD = (function () {
             return future;
         });
 
+        // Do it instantly
+        this.addCommand("instant", function (callback, args) {
+            callback.apply(this, args);
+            return this;
+        });
+
+        // Do it frequently
+        // constant(callback, [length], [interval])
+        // execute the callback for 'length' milliseconds every 'interval' milliseconds
+        // unless it return false or null (strict!)
         this.addCommand("constant", function (callback, length, interval) {
             var that = this;
             var future = this.future();
