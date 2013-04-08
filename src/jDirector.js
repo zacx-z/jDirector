@@ -6,9 +6,9 @@ jD = (function () {
     // obj is expected to be an instance of Director
 
     var Future = function (obj) {
-        // Actions to be executed when future resumes
+        // Actions to be executed when future realizes
         var actions = [];
-        // whether 'resume' function has been called
+        // whether 'realize' function has been called
         var done = false;
 
         // --------------------
@@ -17,7 +17,7 @@ jD = (function () {
 
         function portFunc(func) {
             return function () {
-                var future = obj.future();
+                var future = obj.makeFuture();
                 var args = arguments;
                 var f = function () {
                     future.follow(func.apply(obj, args));
@@ -41,8 +41,8 @@ jD = (function () {
         // future manipulations
 
         // Do all the actions it has restored
-        this.resume = function() {
-            if (done) return; // resume can only be executed once
+        this.realize = function() {
+            if (done) return; // realize can only be executed once
             actions.forEach(function(a) {
                 a.call(obj);
             });
@@ -50,7 +50,7 @@ jD = (function () {
         }
 
         // Add actions manually
-        this.onResume = function (callback) {
+        this.onRealize = function (callback) {
             var that = this;
             var f = function () {
                 callback.call(that, this);
@@ -59,22 +59,22 @@ jD = (function () {
             else actions.push(f);
         }
 
-        // Make this resume after another future resumes
+        // Make this realize after another future realizes
         // 'prev' may be a future or a director
         this.follow = function (prev) {
-            prev.onResume(this.resume);
+            prev.onRealize(this.realize);
         }
     }
 
     api.Director = function () {
         this.commands = [];
 
-        this.future = function () {
+        this.makeFuture = function () {
             return new Future(this);
         }
 
         // Expected to be called by Future.follow
-        this.onResume = function (callback) {
+        this.onRealize = function (callback) {
             callback.call(this, this);
         }
 
@@ -96,12 +96,12 @@ jD = (function () {
 
         // wait 'ms' milliseconds and execute subsequent commands
         this.addCommand("wait", function (ms) {
-            var future = this.future();
-            setTimeout(future.resume, ms);
+            var future = this.makeFuture();
+            setTimeout(future.realize, ms);
             return future;
         });
 
-        // wait for several futures resume
+        // wait for several futures realize
         // after(future1, future2, ..., [sel])
         this.addCommand("after", function () {
             var sel = -1;
@@ -113,10 +113,10 @@ jD = (function () {
 
             if (sel < 0) sel += l;
                 
-            var future = this.future();
+            var future = this.makeFuture();
             for (var i = 0; i < l; ++i) {
-                arguments[i].onResume(function () {
-                    if (sel == 0) future.resume();
+                arguments[i].onRealize(function () {
+                    if (sel == 0) future.realize();
                     sel --;
                 });
             }
@@ -140,7 +140,7 @@ jD = (function () {
         // unless it return false or null (strict!)
         this.addCommand("constant", function (callback, length, interval) {
             var that = this;
-            var future = this.future();
+            var future = this.makeFuture();
             interval = interval || 20;
 
             var t = 0;
@@ -149,7 +149,7 @@ jD = (function () {
                 var ret = callback.call(that, t);
                 if (ret === null || ret === false) {
                     clearInterval(cid);
-                    future.resume();
+                    future.realize();
                 }
                 t += interval;
             }, interval);
@@ -157,7 +157,7 @@ jD = (function () {
             if (length)
                 setTimeout(function () {
                     clearInterval(cid);
-                    future.resume();
+                    future.realize();
                 }, length);
             return future;
         });

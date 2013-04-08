@@ -179,22 +179,20 @@ new MyDirector().wait(1000).logOK();
 
 `Future` is the return value of many commands of `jD.Director`, such as `wait` and `constant`. It has commands of the same names. However, the execution of them will be delayed. So it is the "future".
 
-`director.future()`: Create a future for `director`.
+`director.makeFuture()`: Create a future for `director`.
 
-`resume()`: Make all delayed commands of the `Future` object to be executed immediately.
+`realize()`: Make all delayed commands of the `Future` object to be executed immediately.
 
-`follow(future)`: Make it resume after `future` resumes.
+`follow(future)`: Make it realize after `future` realizes.
 
-`onResume(callback)`: The callback will be called when the future resumes. The calling code: `callback.call(future, director)`.
+`onRealize(callback)`: The callback will be called when the future realizes. The calling code: `callback.call(future, director)`.
 
 Use `Future` in `addCommand`:
 
 ```javascript
 d.addCommand("delay1s", function () {
-    var future = this.future();
-    setTimeout(function () {
-        future.resume();
-    }, 1000);
+    var future = this.makeFuture();
+    setTimeout(future.realize, 1000);
     return future;
 });
 ```
