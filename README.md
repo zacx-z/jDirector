@@ -117,7 +117,7 @@ If length is not specified or is null, the animation will not stop until the cal
 
 The default value of `interval` is 20.
 
-The callback will be called with a parameter, which represents the time period from the start in milliseconds.
+The callback will be called with a parameter, which represents the time elapsed from the start in milliseconds.
 
 Subsequent commands will be execute after the animation.
 
@@ -179,13 +179,18 @@ new MyDirector().wait(1000).logOK();
 
 `Future` is the return value of many commands of `jD.Director`, such as `wait` and `constant`. It has commands of the same names. However, the execution of them will be delayed. So it is the "future".
 
-`director.makeFuture()`: Create a future for `director`.
+##### director.makeFuture()
+Create a future for `director`.
 
-`realize()`: Make all delayed commands of the `Future` object to be executed immediately.
+##### realize()
+Make all delayed commands of the `Future` object to be executed immediately.
 
-`follow(future)`: Make it realize after `future` realizes.
+##### follow(future)
+Make it realize after `future` realizes.
 
-`onRealize(callback)`: The callback will be called when the future realizes. The calling code: `callback.call(future, director)`.
+##### onRealize(callback)
+The callback will be called when the future realizes. The calling code: `callback.call(future, director)`.
+
 
 Use `Future` in `addCommand`:
 
