@@ -132,28 +132,30 @@ d.constant(function(t) {
 
 #### Extending jDirector & Writing Plugins
 
-jDirector provides `addCommand(name, func)` to add commands to it.
+jDirector provides `upgrade(commandTable)` to add commands to it.
 
 Example:
 ```javascript
 var d = new jD.Director();
-d.addCommand("logStart", function () {
-    console.log("start");
-    return this;
+d.upgrade({
+    logStart : function () {
+        console.log("start");
+        return this;
+    },
+    fadeToBlack : function (speed) {
+        var t = 255;
+        return this.constant(function () {
+            document.body.style.background = 'rgb(' + t + ',' + t + ',' + t + ')';
+            t -= speed;
+            return t >= 0;
+        });
+    }
 });
 
-d.addCommand("fadeToBlack", function (speed) {
-    var t = 255;
-    return this.constant(function () {
-        document.body.style.background = 'rgb(' + t + ',' + t + ',' + t + ')';
-        t -= speed;
-        return t >= 0;
-    });
-});
 d.wait(1000).logStart().fadeToBlack(5).log("over");
 ```
 
-`addCommand` will return the director object when succeeding, or throw an error due to a name conflict.
+`upgrade` may throw an error due to a name conflict.
 
 The body of the command should return a `Future` object, which can be created by `makeFuture` or the helper function `justNow`.
 
@@ -161,15 +163,17 @@ The body of the command should return a `Future` object, which can be created by
  * Return `this.makeFuture()`: Indicating a constant command, whose behavior will last a period of time, such as fading, moving around. Invocations next to it will be called after it has finished (after the future object is called `realize`.
 
 
-With `addCommand`, we can write plugins for jDirector.
+With `upgrade`, we can write plugins for jDirector.
 
 Example:
 
 ```javascript
 function MyDirector() {}
 var proto = new jD.Director();
-proto.addCommand("logOK", function () {
-    return this.log("OK");
+proto.upgrade({
+    logOK : function () {
+        return this.log("OK");
+    }
 });
 MyDirector.prototype = proto;
 new MyDirector().wait(1000).logOK();
@@ -192,13 +196,15 @@ Make it realize after `future` realizes.
 The callback will be called when the future realizes. The calling code: `callback.call(future, director)`.
 
 
-Use `Future` in `addCommand`:
+Use `Future`:
 
 ```javascript
-d.addCommand("delay1s", function () {
-    var future = this.makeFuture();
-    setTimeout(future.realize, 1000);
-    return future;
+d.upgrade({
+    delay1s : function () {
+        var future = this.makeFuture();
+        setTimeout(future.realize, 1000);
+        return future;
+    }
 });
 ```
 

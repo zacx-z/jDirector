@@ -80,88 +80,88 @@ jD = (function () {
         }
 
         // Add a command to customize it
-        this.addCommand = function (name, callback) {
-            if (this[name]) throw "Name Conflict";
-            this[name] = callback;
-            this.commands.push(name);
-            return this.justNow();
+        this.upgrade = function (table) {
+            for (var name in table) {
+                if (this[name]) throw "Name Conflict";
+                this[name] = table[name];
+                this.commands.push(name);
+            }
         }
 
 
-        // The same as console.log,
-        // except that it is scheduled in the director flow
-        this.addCommand("log", function () {
-            console.log.apply(console, arguments);
-            return this.justNow();
-        });
-
-        // wait 'ms' milliseconds and execute subsequent commands
-        this.addCommand("wait", function (ms) {
-            var future = this.makeFuture();
-            setTimeout(future.realize, ms);
-            return future;
-        });
-
-        // wait for several futures realize
-        // after(future1, future2, ..., [sel])
-        this.addCommand("after", function () {
-            var sel = -1;
-            var l = arguments.length;
-            if (typeof arguments[l - 1] == 'number') {
-                sel = arguments[l - 1];
-                l --;
-            }
-
-            if (sel < 0) sel += l;
-                
-            var future = this.makeFuture();
-            for (var i = 0; i < l; ++i) {
-                arguments[i].onRealize(function () {
-                    if (sel == 0) future.realize();
-                    sel --;
-                });
-            }
-            return future;
-        });
-
-        // do customized commands without calling 'addCommand'
-        this.addCommand("invoke", function (callback, args) {
-            return callback.apply(this, args);
-        });
-
-        // Do it instantly
-        this.addCommand("instant", function (callback, args) {
-            callback.apply(this, args);
-            return this.justNow();
-        });
-
-        // Do it frequently
-        // constant(callback, [length], [interval])
-        // execute the callback for 'length' milliseconds every 'interval' milliseconds
-        // unless it return false or null (strict!)
-        this.addCommand("constant", function (callback, length, interval) {
-            var that = this;
-            var future = this.makeFuture();
-            interval = interval || 20;
-
-            var t = 0;
-
-            var cid = setInterval(function () {
-                var ret = callback.call(that, t);
-                if (ret === null || ret === false) {
-                    clearInterval(cid);
-                    future.realize();
+        // add commands
+        this.upgrade({
+            // The same as console.log,
+            // except that it is scheduled in the director flow
+            log : function () {
+                console.log.apply(console, arguments);
+                return this.justNow();
+            },
+            // wait 'ms' milliseconds and execute subsequent commands
+            wait : function (ms) {
+                var future = this.makeFuture();
+                setTimeout(future.realize, ms);
+                return future;
+            },
+            // wait for several futures realize
+            // after(future1, future2, ..., [sel])
+            after : function () {
+                var sel = -1;
+                var l = arguments.length;
+                if (typeof arguments[l - 1] == 'number') {
+                    sel = arguments[l - 1];
+                    l --;
                 }
-                t += interval;
-            }, interval);
 
-            if (length)
-                setTimeout(function () {
-                    clearInterval(cid);
-                    future.realize();
-                }, length);
-            return future;
+                if (sel < 0) sel += l;
+                    
+                var future = this.makeFuture();
+                for (var i = 0; i < l; ++i) {
+                    arguments[i].onRealize(function () {
+                        if (sel == 0) future.realize();
+                        sel --;
+                    });
+                }
+                return future;
+            },
+            // do customized commands without calling 'addCommand'
+            invoke : function (callback, args) {
+                return callback.apply(this, args);
+            },
+            // Do it instantly
+            instant : function (callback, args) {
+                callback.apply(this, args);
+                return this.justNow();
+            },
+            // Do it frequently
+            // constant(callback, [length], [interval])
+            // execute the callback for 'length' milliseconds every 'interval' milliseconds
+            // unless it return false or null (strict!)
+            constant : function (callback, length, interval) {
+                var that = this;
+                var future = this.makeFuture();
+                interval = interval || 20;
+
+                var t = 0;
+
+                var cid = setInterval(function () {
+                    var ret = callback.call(that, t);
+                    if (ret === null || ret === false) {
+                        clearInterval(cid);
+                        future.realize();
+                    }
+                    t += interval;
+                }, interval);
+
+                if (length)
+                    setTimeout(function () {
+                        clearInterval(cid);
+                        future.realize();
+                    }, length);
+                return future;
+            }
         });
+
     }
     return api;
 })();
