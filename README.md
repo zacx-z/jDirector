@@ -155,10 +155,10 @@ d.wait(1000).logStart().fadeToBlack(5).log("over");
 
 `addCommand` will return the director object when succeeding, or throw an error due to a name conflict.
 
-The body of the command should return `this` or a `Future` object.
+The body of the command should return a `Future` object, which can be created by `makeFuture` or the helper function `justNow`.
 
- * Return `this`: Indicating an instant command, whose behavior should finish immediately after invocation, such as hiding, changing texts. Invocations next to it will be called immediatly.
- * Return `Future`: Indicating a constant command, whose behavior will last a period of time, such as fading, moving around. Invocations next to it will be called after it has finished.
+ * Return `this.justNow()`: Indicating an instant command, whose behavior should finish immediately after invocation, such as hiding, changing texts. Invocations next to it will be called immediatly.
+ * Return `this.makeFuture()`: Indicating a constant command, whose behavior will last a period of time, such as fading, moving around. Invocations next to it will be called after it has finished (after the future object is called `realize`.
 
 
 With `addCommand`, we can write plugins for jDirector.
