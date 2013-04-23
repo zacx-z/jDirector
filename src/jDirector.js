@@ -6,10 +6,12 @@ jD = (function () {
     // obj is expected to be an instance of Director
 
     var Future = function (obj) {
+        var thisFuture = this;
         // Actions to be executed when future realizes
         var actions = [];
         // whether 'realize' function has been called
-        var done = false;
+        this.realized = false;
+
 
         // --------------------
         // Copy all the commands director
@@ -22,13 +24,12 @@ jD = (function () {
                 var f = function () {
                     future.follow(func.apply(obj, args));
                 }
-                if (done) f();
+                if (thisFuture.realized) f();
                 else actions.push(f);
                 return future;
             }
         }
 
-        var thisFuture = this;
         function portAll(funcNames) {
             funcNames.forEach(function (name) {
                 thisFuture[name] = portFunc(obj[name]);
@@ -42,11 +43,12 @@ jD = (function () {
 
         // Do all the actions it has restored
         this.realize = function() {
-            if (done) return; // realize can only be executed once
+            if (thisFuture.realized) return; // realize can only be executed once
             actions.forEach(function(a) {
                 a.call(obj);
             });
-            done = true;
+            thisFuture.realized = true;
+            return thisFuture;
         }
 
         // Add actions manually
@@ -55,7 +57,7 @@ jD = (function () {
             var f = function () {
                 callback.call(that, this);
             }
-            if (done) f();
+            if (thisFuture.realized) f();
             else actions.push(f);
         }
 
@@ -72,10 +74,9 @@ jD = (function () {
         this.makeFuture = function () {
             return new Future(this);
         }
-
-        // Expected to be called by Future.follow
-        this.onRealize = function (callback) {
-            callback.call(this, this);
+        
+        this.justNow = function () {
+            return new Future(this).realize()
         }
 
         // Add a command to customize it
@@ -83,7 +84,7 @@ jD = (function () {
             if (this[name]) throw "Name Conflict";
             this[name] = callback;
             this.commands.push(name);
-            return this;
+            return this.justNow();
         }
 
 
@@ -91,7 +92,7 @@ jD = (function () {
         // except that it is scheduled in the director flow
         this.addCommand("log", function () {
             console.log.apply(console, arguments);
-            return this;
+            return this.justNow();
         });
 
         // wait 'ms' milliseconds and execute subsequent commands
@@ -131,7 +132,7 @@ jD = (function () {
         // Do it instantly
         this.addCommand("instant", function (callback, args) {
             callback.apply(this, args);
-            return this;
+            return this.justNow();
         });
 
         // Do it frequently
