@@ -163,6 +163,8 @@ jD = (function () {
         });
 
     }
+
+    api.director = new api.Director();
     return api;
 })();
 
