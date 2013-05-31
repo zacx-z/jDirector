@@ -79,8 +79,8 @@ jD = (function () {
             return new Future(this).realize()
         }
 
-        // Add a command to customize it
-        this.upgrade = function (table) {
+        // Add commands to customize it
+        this.extend = function (table) {
             for (var name in table) {
                 if (this[name]) throw "Name Conflict";
                 this[name] = table[name];
@@ -90,7 +90,7 @@ jD = (function () {
 
 
         // add commands
-        this.upgrade({
+        this.extend({
             // The same as console.log,
             // except that it is scheduled in the director flow
             log : function () {
